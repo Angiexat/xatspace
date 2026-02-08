@@ -26,7 +26,7 @@
             min-height: 100vh;
             /* Soporte para altura dinámica en móviles modernos */
             min-height: 100dvh; 
-            cursor: none;
+            cursor: auto; /* Cursor normal por defecto (móvil) */
             overflow-x: hidden;
             background-color: var(--deep-purple);
             /* Evita el rebote elástico en iOS */
@@ -39,10 +39,19 @@
             -webkit-font-smoothing: antialiased;
         }
 
+        /* Solo ocultar el cursor nativo en PC */
+        @media (hover: hover) {
+            body {
+                cursor: none;
+            }
+        }
+
         /* VIDEO DE FONDO */
         #video-bg {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             object-fit: cover; z-index: -5;
+            /* Optimización de renderizado */
+            will-change: transform;
         }
         #video-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
@@ -64,15 +73,13 @@
             50% { opacity: var(--max-opacity); transform: scale(1); box-shadow: 0 0 4px var(--light-pink); }
         }
 
-        /* CURSOR (Oculto en móvil por defecto vía media query en CSS abajo) */
+        /* CURSOR Y PARTÍCULAS (Estrictamente ocultos en móvil) */
         .cursor-particle {
             position: fixed; pointer-events: none; border-radius: 50%; z-index: 9998;
             animation: particleFade 1s forwards;
+            display: none; /* Oculto por defecto */
         }
-        @keyframes particleFade {
-            0% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
-            100% { transform: translate(var(--tx), var(--ty)) scale(0); opacity: 0; }
-        }
+        
         #cursor-glow {
             position: fixed; width: 20px; height: 20px;
             background: rgba(242, 192, 221, 0.5);
@@ -80,18 +87,24 @@
             pointer-events: none; z-index: 9999;
             transform: translate(-50%, -50%);
             transition: width 0.2s, height 0.2s, background 0.3s;
-            mix-blend-mode: difference; display: none;
+            mix-blend-mode: difference; 
+            display: none; /* Oculto por defecto */
         }
-        @media (hover: hover) { #cursor-glow { display: block; } }
-        /* En móvil, el cursor personalizado no se muestra para no molestar el touch */
-        
-        a:hover ~ #cursor-glow, button:hover ~ #cursor-glow, .cursor-hover:hover ~ #cursor-glow {
-            width: 45px; height: 45px; background: rgba(242, 192, 221, 0.8); border-color: transparent;
+
+        /* Solo mostrar cursor y partículas si el dispositivo tiene puntero preciso (PC) */
+        @media (hover: hover) and (pointer: fine) {
+            #cursor-glow { display: block; }
+            .cursor-particle { display: block; }
+        }
+
+        @keyframes particleFade {
+            0% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+            100% { transform: translate(var(--tx), var(--ty)) scale(0); opacity: 0; }
         }
 
         /* UI */
         .glass-card {
-            background: rgba(37, 9, 46, 0.65); /* Un poco más oscuro para mejor lectura en móvil */
+            background: rgba(37, 9, 46, 0.65); 
             backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px);
             border: 1px solid rgba(242, 192, 221, 0.15); border-top: 1px solid rgba(242, 192, 221, 0.3);
             box-shadow: 0 20px 50px -10px rgba(0, 0, 0, 0.8);
@@ -108,11 +121,10 @@
             background: linear-gradient(135deg, var(--deep-purple) 0%, var(--purple-mid) 100%);
             position: relative; overflow: hidden; transition: all 0.4s ease;
             border: 1px solid rgba(242, 192, 221, 0.3); color: var(--light-pink);
-            /* Evitar highlight azul en móvil */
             -webkit-tap-highlight-color: transparent;
         }
         .btn-luxury:hover { box-shadow: 0 0 25px rgba(242, 192, 221, 0.4); transform: translateY(-2px); border-color: var(--light-pink); }
-        .btn-luxury:active { transform: scale(0.95); } /* Feedback táctil */
+        .btn-luxury:active { transform: scale(0.95); }
         .btn-luxury:disabled { opacity: 0.7; cursor: not-allowed; filter: grayscale(1); }
 
         .gallery-scroll::-webkit-scrollbar { display: none; }
@@ -159,7 +171,6 @@
     <!-- VIDEO DE FONDO -->
     <video autoplay muted loop playsinline id="video-bg">
         <source src="fondo.mp4" type="video/mp4">
-        <!-- Fallback online -->
         <source src="https://i.imgur.com/uvpo43E.mp4" type="video/mp4">
     </video>
     
@@ -175,7 +186,6 @@
                 <div class="absolute inset-0 rounded-full border border-t-[var(--light-pink)] border-r-[var(--purple-mid)] border-b-[var(--light-pink)] border-l-[var(--purple-mid)] animate-[spin_6s_linear_infinite] opacity-80"></div>
                 <div class="absolute inset-3 rounded-full border border-white/10"></div>
                 <div class="absolute inset-4 rounded-full overflow-hidden flex items-center justify-center bg-black">
-                    <!-- FOTO PERFIL (Entrada) -->
                     <img src="perfil.jpg" onerror="this.src='https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80'" class="w-full h-full object-cover opacity-60 group-hover:opacity-100 transition-opacity duration-500 scale-110 group-hover:scale-100">
                     <div class="absolute inset-0 flex items-center justify-center bg-black/20 group-hover:bg-transparent transition-all">
                         <i class="fa-solid fa-play text-3xl md:text-4xl text-[var(--light-pink)] drop-shadow-[0_0_10px_var(--light-pink)] transform group-hover:scale-110 transition-transform"></i>
@@ -198,7 +208,6 @@
                     <p class="text-[var(--light-pink)] text-[10px] md:text-xs tracking-[0.3em] uppercase mt-2 font-semibold border-b border-[var(--light-pink)]/20 pb-3 inline-block">iAngeLicaMHdz (1555239930)</p>
                 </div>
                 
-                <!-- FOTO PRINCIPAL -->
                 <div class="relative w-full aspect-[4/5] rounded-2xl overflow-hidden mb-6 border border-[var(--light-pink)]/20 shadow-2xl">
                     <img src="perfil.jpg" onerror="this.src='https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=800&q=80'" class="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105">
                     <div class="absolute bottom-3 right-3 bg-[var(--deep-purple)]/80 backdrop-blur-md px-2 py-1 rounded-full border border-[var(--light-pink)]/30 flex items-center gap-1.5">
@@ -207,7 +216,6 @@
                     </div>
                 </div>
                 
-                <!-- CONTADOR DE LIKES (Inicia en 143) -->
                 <div class="flex justify-center pt-2 pb-4">
                     <div class="group/stat text-center">
                         <span id="like-counter" class="block text-4xl font-bold text-white drop-shadow-[0_0_10px_var(--light-pink)] transition-transform duration-200">143</span>
@@ -215,7 +223,6 @@
                     </div>
                 </div>
 
-                <!-- BOTONES -->
                 <div class="flex gap-2 md:gap-3">
                     <button id="like-btn" onclick="addLike(event)" class="cursor-hover flex-1 btn-luxury py-2.5 md:py-3 rounded-xl text-xs font-bold tracking-widest uppercase shadow-lg active:scale-95 transition-transform flex items-center justify-center gap-2 relative overflow-visible">
                         Like <i class="fa-solid fa-heart"></i>
@@ -229,7 +236,6 @@
                 </div>
             </div>
 
-            <!-- MINI BIO -->
             <div class="glass-card rounded-3xl p-4 md:p-5 flex items-center gap-3 md:gap-4 cursor-hover border-l-2 border-l-[var(--light-pink)]">
                 <div class="w-10 h-10 md:w-12 md:h-12 rounded-full overflow-hidden border border-[var(--light-pink)] p-0.5 shrink-0">
                     <img src="avatar.jpg" onerror="this.src='https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=200&q=80'" class="w-full h-full object-cover rounded-full">
@@ -239,14 +245,13 @@
                         @Angie
                         <img src="https://flagcdn.com/w20/mx.png" srcset="https://flagcdn.com/w40/mx.png 2x" width="16" height="12" alt="México" class="rounded-[2px] opacity-80">
                     </h3>
-                    <p class="text-[10px] md:text-xs text-gray-400 mt-0.5">Vibes: <span class="text-[var(--light-pink)]">Light Pink</span> & <span class="text-[#a47ba8]">Purple</span>.</p>
+                    <p class="text-[10px] md:text-xs text-gray-400 mt-0.5">Vibes: <span class="text-[var(--light-pink)]">Light Pink</span> & <span class="text-[#a47ba8]">Deep Purple</span>.</p>
                 </div>
             </div>
         </section>
 
         <section class="md:col-span-7 flex flex-col gap-4 md:gap-6">
             
-            <!-- REPRODUCTOR -->
             <div class="glass-card rounded-3xl p-6 md:p-8 relative overflow-hidden">
                 <div class="flex items-start justify-between mb-6 relative z-10">
                     <div>
@@ -296,48 +301,38 @@
                 <audio id="audio-player" ontimeupdate="updateProgress()" onended="nextSong()"></audio>
             </div>
 
-            <!-- GALERÍA -->
             <div class="glass-card rounded-2xl p-4 relative group/slider border border-[var(--light-pink)]/10">
                 <div class="flex items-center justify-between mb-3 px-1">
                     <h3 class="text-[10px] font-bold text-[var(--light-pink)] uppercase tracking-widest"><i class="fa-regular fa-images mr-2"></i>Galería</h3>
                 </div>
 
-                <!-- Botón Izquierda (Oculto en móvil para no molestar el swipe) -->
                 <button onclick="slideGallery(-1)" class="hidden md:flex absolute left-2 top-1/2 -translate-y-1/2 z-20 w-8 h-8 rounded-full bg-black/50 backdrop-blur-sm border border-[var(--light-pink)]/30 items-center justify-center text-white opacity-0 group-hover/slider:opacity-100 transition-opacity hover:bg-[var(--light-pink)] hover:text-black">
                     <i class="fa-solid fa-chevron-left text-xs"></i>
                 </button>
 
-                <!-- IMÁGENES -->
                 <div id="gallery-slider" class="gallery-scroll flex overflow-x-auto gap-4 snap-x snap-mandatory scroll-smooth pb-2 -mx-2 px-2">
-                    
                     <div class="gallery-item relative shrink-0 w-[85%] sm:w-[48%] aspect-[4/3] rounded-xl overflow-hidden cursor-pointer group/img">
                         <img src="galeria1.jpg" onerror="this.src='https://images.unsplash.com/photo-1618331835717-801e976710b2?auto=format&fit=crop&w=600&q=80'" class="w-full h-full object-cover transition-transform duration-700 group-hover/img:scale-110">
                     </div>
-
                     <div class="gallery-item relative shrink-0 w-[85%] sm:w-[48%] aspect-[4/3] rounded-xl overflow-hidden cursor-pointer group/img">
                         <img src="galeria2.jpg" onerror="this.src='https://images.unsplash.com/photo-1614613535308-eb5fbd3d2c17?auto=format&fit=crop&w=600&q=80'" class="w-full h-full object-cover transition-transform duration-700 group-hover/img:scale-110">
                     </div>
-
                     <div class="gallery-item relative shrink-0 w-[85%] sm:w-[48%] aspect-[4/3] rounded-xl overflow-hidden cursor-pointer group/img">
                         <img src="galeria3.jpg" onerror="this.src='https://images.unsplash.com/photo-1550684848-fac1c5b4e853?auto=format&fit=crop&w=600&q=80'" class="w-full h-full object-cover transition-transform duration-700 group-hover/img:scale-110">
                     </div>
-
                     <div class="gallery-item relative shrink-0 w-[85%] sm:w-[48%] aspect-[4/3] rounded-xl overflow-hidden cursor-pointer group/img">
                         <img src="galeria4.jpg" onerror="this.src='https://images.unsplash.com/photo-1517457210348-703079e57d4b?auto=format&fit=crop&w=600&q=80'" class="w-full h-full object-cover transition-transform duration-700 group-hover/img:scale-110">
                     </div>
-
                     <div class="gallery-item relative shrink-0 w-[85%] sm:w-[48%] aspect-[4/3] rounded-xl overflow-hidden cursor-pointer group/img">
                         <img src="galeria5.jpg" onerror="this.src='https://images.unsplash.com/photo-1500462918059-b1a0cb512f1d?auto=format&fit=crop&w=600&q=80'" class="w-full h-full object-cover transition-transform duration-700 group-hover/img:scale-110">
                     </div>
                 </div>
 
-                <!-- Botón Derecha (PC) -->
                 <button onclick="slideGallery(1)" class="hidden md:flex absolute right-2 top-1/2 -translate-y-1/2 z-20 w-8 h-8 rounded-full bg-black/50 backdrop-blur-sm border border-[var(--light-pink)]/30 items-center justify-center text-white opacity-0 group-hover/slider:opacity-100 transition-opacity hover:bg-[var(--light-pink)] hover:text-black">
                     <i class="fa-solid fa-chevron-right text-xs"></i>
                 </button>
             </div>
 
-            <!-- FRASE (QUOTE) -->
             <div class="glass-card rounded-2xl p-6 md:p-8 text-center border-t border-[var(--light-pink)]/20">
                 <p class="font-serif italic text-gray-400 text-base md:text-lg leading-relaxed">
                     "Dentro de veinte años estarás más decepcionado por las cosas que no hiciste, que por las que hiciste.
@@ -354,16 +349,13 @@
 
     </main>
     
-    <!-- FOOTER -->
     <footer class="w-full text-center py-4">
         <a href="https://xat.me/EAM96" target="_blank" class="text-[var(--light-pink)]/50 text-[10px] font-serif tracking-widest uppercase hover:text-[var(--light-pink)] hover:shadow-[0_0_10px_var(--light-pink)] hover:scale-105 transition-all duration-300 cursor-pointer inline-block p-1 rounded-lg">
             ©2026 Eam96 Xatspace Design
         </a>
     </footer>
 
-    <!-- LOGICA JAVASCRIPT -->
     <script>
-        // --- BLOQUEO CLICK DERECHO Y TECLAS ---
         document.addEventListener('contextmenu', event => event.preventDefault());
         document.onkeydown = function(e) {
             if(e.keyCode == 123) return false; 
@@ -372,30 +364,25 @@
             if(e.ctrlKey && e.keyCode == 'U'.charCodeAt(0)) return false; 
         }
 
-        // --- CONTADOR DE LIKES (INICIA EN 143) ---
-        let likes = 143; // Comienza en 143
-        let hasLiked = false; // Control de estado local
+        let likes = 143; 
+        let hasLiked = false; 
 
         function addLike(event) {
-            if (hasLiked) return; // Solo 1 clic por visita/recarga
+            if (hasLiked) return; 
 
             hasLiked = true;
             likes++;
             
-            // Actualizar número visualmente
             const counter = document.getElementById('like-counter');
             counter.innerText = likes.toLocaleString();
             
-            // Animación del número
             counter.classList.add('pump-anim');
             setTimeout(() => counter.classList.remove('pump-anim'), 300);
 
-            // Estilo del botón (deshabilitado)
             const btn = event.currentTarget;
             btn.style.opacity = '0.7';
             btn.style.cursor = 'default';
 
-            // EXPLOSIÓN DE CORAZONES
             const rect = btn.getBoundingClientRect();
             const centerX = rect.left + rect.width / 2;
             const centerY = rect.top + rect.height / 2;
@@ -424,17 +411,19 @@
             particle.addEventListener('animationend', () => particle.remove());
         }
 
-        // --- SLIDER ---
         function slideGallery(direction) {
             const slider = document.getElementById('gallery-slider');
             const scrollAmount = slider.clientWidth * 0.6;
             slider.scrollBy({ left: direction * scrollAmount, behavior: 'smooth' });
         }
 
-        // --- ESTRELLAS ---
         function createStars() {
             const container = document.getElementById('stars-container');
-            for (let i = 0; i < 80; i++) {
+            // Optimización: Menos estrellas en móvil para rendimiento
+            const isMobile = window.innerWidth < 768;
+            const count = isMobile ? 30 : 80; 
+            
+            for (let i = 0; i < count; i++) {
                 const star = document.createElement('div');
                 star.classList.add('star');
                 const size = Math.random() * 2 + 1;
@@ -449,10 +438,21 @@
         }
         createStars();
 
-        // --- CURSOR ---
         const cursor = document.getElementById('cursor-glow');
         let mouseX = 0, mouseY = 0, cursorX = 0, cursorY = 0, lastParticleTime = 0;
-        document.addEventListener('mousemove', (e) => { mouseX = e.clientX; mouseY = e.clientY; const now = Date.now(); if (now - lastParticleTime > 30) { createParticle(mouseX, mouseY); lastParticleTime = now; } });
+        
+        document.addEventListener('mousemove', (e) => { 
+            // Optimización: No ejecutar lógica de cursor en dispositivos táctiles
+            if (window.matchMedia("(hover: none)").matches) return;
+
+            mouseX = e.clientX; 
+            mouseY = e.clientY; 
+            const now = Date.now(); 
+            if (now - lastParticleTime > 30) { 
+                createParticle(mouseX, mouseY); 
+                lastParticleTime = now; 
+            } 
+        });
         
         function createParticle(x, y) {
             const particle = document.createElement('div');
@@ -470,20 +470,25 @@
         }
 
         function animateCursor() {
+            // Optimización: Detener bucle en móvil
+            if (window.matchMedia("(hover: none)").matches) return;
+
             cursorX += (mouseX - cursorX) * 0.15; cursorY += (mouseY - cursorY) * 0.15;
-            if(window.matchMedia("(hover: hover)").matches) { cursor.style.left = cursorX+'px'; cursor.style.top = cursorY+'px'; }
+            // Doble chequeo para asegurar que no se mueva el elemento oculto
+            if(window.matchMedia("(hover: hover)").matches) { 
+                cursor.style.left = cursorX+'px'; 
+                cursor.style.top = cursorY+'px'; 
+            }
             requestAnimationFrame(animateCursor);
         }
         animateCursor();
 
-        // --- MÚSICA (Archivos directos) ---
         const playlist = [
             { 
                 title: "Stressed Out", artist: "twenty one pilots", 
                 cover: "portada1.jpg", src: "cancion1.mp3" 
             }
         ];
-        // Fallback online
         const onlineFallback = [
             { src: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3", cover: "https://images.unsplash.com/photo-1493225255756-d9584f8606e9?auto=format&fit=crop&w=300&q=80" }
         ];
@@ -520,6 +525,6 @@
         volumeSlider.addEventListener('input', (e) => audio.volume = e.target.value);
     </script>
 </body>
-
 </html>
+
 
